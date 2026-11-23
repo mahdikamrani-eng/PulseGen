@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>مولد نور و صدای پالسی</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--line:#2a2f3a;--tx:#e8eaf0;--mut:#9aa3b5;--ac:#4f8cff;--danger:#e5484d;--ok:#3ccf91;--warn:#f5a524}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,"Vazirmatn",Tahoma,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:20px;margin:8px 0 2px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h2{font-size:15px;margin:0 0 10px;color:#fff}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+.row{display:flex;align-items:center;gap:10px}
+.row>*{min-width:0}
+input[type=range]{flex:1;accent-color:var(--ac);height:28px}
+input[type=number],select{background:#10131a;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:15px;width:96px}
+select{width:auto;min-width:110px}
+input[type=color]{width:56px;height:44px;border:1px solid var(--line);border-radius:10px;background:#10131a;padding:3px}
+.val{min-width:64px;text-align:left;direction:ltr;font-variant-numeric:tabular-nums;font-weight:600}
+.sw{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sw button{width:32px;height:32px;border-radius:50%;border:2px solid #fff3;cursor:pointer;padding:0}
+.info{font-size:13px;line-height:1.7;border-radius:10px;padding:9px 11px;margin-top:10px;background:#10131a;border:1px solid var(--line);color:var(--mut)}
+.info.warn{border-color:var(--warn);color:#ffd58a}
+.info.ok{border-color:#1f6b50;color:#9be8c8}
+.mini{background:#232838;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;margin-top:6px;cursor:pointer}
+.start{width:100%;padding:16px;font-size:18px;font-weight:700;border:0;border-radius:14px;background:var(--ac);color:#fff;cursor:pointer;margin-top:6px}
+.start:active{filter:brightness(.9)}
+.note{font-size:12px;color:var(--mut);line-height:1.8;margin-top:12px}
+details summary{cursor:pointer;color:var(--mut);font-size:13px}
+.chk{display:flex;align-items:center;gap:8px;color:var(--tx);font-size:14px;margin:0}
+.chk input{width:20px;height:20px}
+/* stage */
+#stage{position:fixed;inset:0;background:#000;z-index:1000;display:none;touch-action:none}
+#stage.show{display:block}
+#panel{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 20px));background:#000c;border:1px solid #fff4;border-radius:14px;padding:10px;color:#fff;font-size:12px;backdrop-filter:blur(4px)}
+#panel .stats{display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:6px}
+#panel .stats b{direction:ltr;display:inline-block}
+#panel .prow{display:flex;align-items:center;gap:8px;margin:2px 0}
+#panel .prow span{width:62px;flex:none}
+#panel .prow input{flex:1;height:24px}
+#panel .sw{margin:6px 0}
+#panel .sw button{width:26px;height:26px}
+#btnStop{width:100%;padding:14px;font-size:18px;font-weight:800;border:0;border-radius:12px;background:var(--danger);color:#fff;margin-top:6px}
+#hint{position:absolute;top:10px;left:0;right:0;text-align:center;color:#888;font-size:11px;pointer-events:none}
+/* modal */
+#modal{position:fixed;inset:0;background:#000d;z-index:2000;display:none;align-items:center;justify-content:center;padding:16px}
+#modal.show{display:flex}
+#modal .box{background:var(--card);border:1px solid var(--warn);border-radius:16px;padding:18px;max-width:460px;width:100%}
+#modal h3{margin:0 0 8px;color:var(--warn);font-size:17px}
+#modal p{font-size:14px;line-height:1.9;margin:6px 0}
+#modal .btns{display:flex;gap:10px;margin-top:14px}
+#modal .btns button{flex:1;padding:13px;border-radius:12px;border:0;font-size:16px;font-weight:700;cursor:pointer}
+#mOk{background:var(--ac);color:#fff}#mOk:disabled{opacity:.35}
+#mNo{background:#2a2f3a;color:var(--tx)}
+</style>
+</head>
+<body>
+<main id="app">
+  <h1>مولد نور و صدای پالسی</h1>
+  <p class="sub">نور صفحه و صدای گوشی را با یک زمان‌بندی مشترک، هم‌زمان قطع و وصل می‌کند.</p>
+
+  <section class="card">
+    <h2>۱. فرکانس</h2>
+    <div class="row">
+      <input type="range" id="fRange" min="1" max="100" step="1" value="40">
+      <input type="number" id="fNum" min="1" max="100" step="0.1" value="40">
+      <span class="val" id="fLbl">40 Hz</span>
+    </div>
+    <div class="info" id="refInfo">در حال اندازه‌گیری نرخ نوسازی صفحه…</div>
+    <button class="mini" id="btnBest" hidden></button>
+    <button class="mini" id="btnRemeasure">اندازه‌گیری مجدد نرخ نوسازی</button>
+    <div id="probe" style="width:100%;height:10px;margin-top:8px;border-radius:5px;opacity:0"></div>
+  </section>
+
+  <section class="card">
+    <h2>۲. نور صفحه‌نمایش</h2>
+    <label>رنگ</label>
+    <div class="row"><input type="color" id="color" value="#ffffff"><div class="sw" id="sw1"></div></div>
+    <label>شدت نور</label>
+    <div class="row"><input type="range" id="bRange" min="0" max="100" value="100"><span class="val" id="bLbl">100%</span></div>
+  </section>
+
+  <section class="card">
+    <h2>۳. صدا</h2>
+    <label class="chk"><input type="checkbox" id="sndOn" checked> صدا فعال باشد</label>
+    <label>نوع صدا</label>
+    <select id="wave">
+      <option value="sine">سینوسی</option>
+      <option value="square">مربعی</option>
+      <option value="triangle">مثلثی</option>
+      <option value="sawtooth">دندانه‌اره‌ای</option>
+    </select>
+    <label>فرکانس صوتی (Pitch)</label>
+    <div class="row"><input type="range" id="pRange" min="20" max="2000" step="1" value="440"><input type="number" id="pNum" min="20" max="8000" step="1" value="440"></div>
+    <label>شدت صدا</label>
+    <div class="row"><input type="range" id="vRange" min="0" max="100" value="50"><span class="val" id="vLbl">50%</span></div>
+  </section>
+
+  <section class="card">
+    <h2>۴. اجرا</h2>
+    <label>مدت اجرا (۰ = بدون توقف خودکار)</label>
+    <div class="row">
+      <input type="number" id="durVal" min="0" step="1" value="0">
+      <select id="durUnit"><option value="1">ثانیه</option><option value="60" selected>دقیقه</option></select>
+    </div>
+    <details style="margin-top:10px">
+      <summary>تنظیم دقیق هماهنگی نور و صدا</summary>
+      <label>جبران تأخیر (میلی‌ثانیه)</label>
+      <div class="row"><input type="range" id="offRange" min="-60" max="60" step="1" value="0"><span class="val" id="offLbl">0 ms</span></div>
+      <div class="info">بلوتوث و بعضی گوشی‌ها صدا را با تأخیر پخش می‌کنند. اگر صدا و نور هم‌زمان حس نمی‌شوند این مقدار را کم یا زیاد کن.</div>
+    </details>
+    <button class="start" id="btnStart">▶ START</button>
+  </section>
+
+  <p class="note">
+    ⚠️ نور چشمک‌زن می‌تواند در افراد حساس باعث تشنج، سردرد، سرگیجه یا ناراحتی شود. هر زمان احساس ناخوشی کردی فوراً توقف کن. روی صفحه‌ی در حال اجرا هر جا بزنی برنامه متوقف می‌شود.<br>
+    این برنامه پنل صفحه را فیزیکی خاموش و روشن نمی‌کند؛ فقط تصویر را بین رنگ انتخابی و سیاه عوض می‌کند، پس سرعت نور به نرخ نوسازی صفحه محدود است.
+  </p>
+</main>
+
+<div id="stage">
+  <div id="hint">برای توقف، روی صفحه بزن یا Esc</div>
+  <div id="panel">
+    <div class="stats">
+      <span>درخواستی: <b id="stReq">-</b></span>
+      <span>نور واقعی: <b id="stLight">-</b></span>
+      <span>نوسازی صفحه: <b id="stRef">-</b></span>
+      <span>صدا: <b id="stSnd">-</b></span>
+      <span>باقی‌مانده: <b id="stTime">-</b></span>
+    </div>
+    <div class="prow"><span>فرکانس</span><input type="range" id="pFreq" min="1" max="100" step="1"></div>
+    <div class="prow"><span>شدت نور</span><input type="range" id="pBright" min="0" max="100"></div>
+    <div class="prow"><span>شدت صدا</span><input type="range" id="pVol" min="0" max="100"></div>
+    <div class="sw" id="sw2"></div>
+    <button id="btnStop">⏹ STOP</button>
+  </div>
+</div>
+
+<div id="modal">
+  <div class="box">
+    <h3>هشدار نور چشمک‌زن</h3>
+    <p>این برنامه صفحه را با سرعت بالا روشن و خاموش می‌کند. این کار ممکن است در افراد مستعد باعث <b>تشنج، سردرد، سرگیجه</b> یا ناراحتی چشم شود.</p>
+    <p>اگر سابقه‌ی صرع یا حساسیت به نور داری، استفاده نکن یا قبلاً با پزشک مشورت کن. با اولین نشانه‌ی ناراحتی، دکمه‌ی STOP یا هر جای صفحه را لمس کن.</p>
+    <label class="chk"><input type="checkbox" id="mChk"> خطرها را فهمیدم و موافقم</label>
+    <div class="btns"><button id="mNo">انصراف</button><button id="mOk" disabled>ادامه</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const S = {freq:40, color:'#ffffff', bright:100, sound:true, wave:'sine', pitch:440, vol:50, offset:0};
+const PRESETS = ['#ffffff','#ff0000','#00ff00','#0000ff','#ffff00','#a020f0','#00ffff','#ff8800'];
+
+let ctx=null, osc=null, lfo=null, lfoGain=null, gate=null, master=null;
+let running=false, startT=0, rafId=0, enteredFS=false, wake=null, consented=false;
+let refreshHz=60, deltas=[], lastTs=0, lastOn=false, dirty=true, edges=[], lastStat=0, runStartTs=0, durSec=0;
+let idleMeasure=false, runSeenHz=0;
+let anchored=false, t0=0, K=0, frameDur=1000/60, lastPLL=0, aPh=0, aT=0, aF=0;
+
+/* ---------- helpers ---------- */
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const fmt=n=>(Math.round(n*10)/10).toString();
+function shade(){
+  const h=S.color.replace('#','');
+  const k=S.bright/100;
+  const r=parseInt(h.slice(0,2),16)*k, g=parseInt(h.slice(2,4),16)*k, b=parseInt(h.slice(4,6),16)*k;
+  return `rgb(${r|0},${g|0},${b|0})`;
+}
+function makeSwatches(el){
+  PRESETS.forEach(c=>{
+    const b=document.createElement('button');
+    b.style.background=c; b.setAttribute('aria-label',c);
+    b.addEventListener('click',e=>{e.stopPropagation(); setColor(c);});
+    el.appendChild(b);
+  });
+}
+makeSwatches($('sw1')); makeSwatches($('sw2'));
+
+/* ---------- setters (keep both UIs in sync) ---------- */
+function setFreq(v){
+  v=clamp(parseFloat(v)||1,1,100); S.freq=v;
+  $('fRange').value=v; $('fNum').value=fmt(v); $('fLbl').textContent=fmt(v)+' Hz'; $('pFreq').value=v;
+  if(running) restartPulse();
+  updateInfo();
+}
+function setBright(v){
+  S.bright=clamp(parseFloat(v)||0,0,100);
+  $('bRange').value=S.bright; $('bLbl').textContent=Math.round(S.bright)+'%'; $('pBright').value=S.bright;
+  dirty=true;
+}
+function setColor(c){ S.color=c; $('color').value=c; dirty=true; }
+function setVol(v){
+  S.vol=clamp(parseFloat(v)||0,0,100);
+  $('vRange').value=S.vol; $('vLbl').textContent=Math.round(S.vol)+'%'; $('pVol').value=S.vol;
+  applyMaster();
+}
+function setPitch(v){
+  S.pitch=clamp(parseFloat(v)||440,20,8000);
+  $('pRange').value=Math.min(S.pitch,2000); $('pNum').value=Math.round(S.pitch);
+  if(osc) osc.frequency.setTargetAtTime(S.pitch,ctx.currentTime,0.005);
+}
+function applyMaster(){
+  if(master) master.gain.setTargetAtTime(S.sound?S.vol/100:0,ctx.currentTime,0.01);
+}
+
+$('fRange').addEventListener('input',e=>setFreq(e.target.value));
+$('fNum').addEventListener('change',e=>setFreq(e.target.value));
+$('pFreq').addEventListener('input',e=>setFreq(e.target.value));
+$('bRange').addEventListener('input',e=>setBright(e.target.value));
+$('pBright').addEventListener('input',e=>setBright(e.target.value));
+$('color').addEventListener('input',e=>setColor(e.target.value));
+$('vRange').addEventListener('input',e=>setVol(e.target.value));
+$('pVol').addEventListener('input',e=>setVol(e.target.value));
+$('pRange').addEventListener('input',e=>setPitch(e.target.value));
+$('pNum').addEventListener('change',e=>setPitch(e.target.value));
+$('sndOn').addEventListener('change',e=>{S.sound=e.target.checked; applyMaster();});
+$('wave').addEventListener('change',e=>{S.wave=e.target.value; if(osc) osc.type=S.wave;});
+$('offRange').addEventListener('input',e=>{S.offset=+e.target.value; $('offLbl').textContent=S.offset+' ms';});
+$('pFreq').value=S.freq; $('pBright').value=S.bright; $('pVol').value=S.vol;
+
+/* ---------- audio: one square-wave LFO gates the tone, so timing is sample-accurate ---------- */
+function buildAudio(){
+  master=ctx.createGain(); master.gain.value=S.sound?S.vol/100:0;
+  gate=ctx.createGain(); gate.gain.value=0.5;          // 0.5 + 0.5*square(±1) = 0 or 1
+  osc=ctx.createOscillator(); osc.type=S.wave; osc.frequency.value=S.pitch;
+  lfo=ctx.createOscillator(); lfo.type='square'; lfo.frequency.value=S.freq;
+  lfoGain=ctx.createGain(); lfoGain.gain.value=0.5;
+  osc.connect(gate); gate.connect(master); master.connect(ctx.destination);
+  lfo.connect(lfoGain); lfoGain.connect(gate.gain);
+  startT=ctx.currentTime+0.1;
+  aPh=0; aT=startT; aF=S.freq;
+  osc.start(startT); lfo.start(startT);
+}
+/* audio phase (in cycles) is tracked by integrating the gate frequency, since the PLL nudges it slightly */
+function aphaseAt(t){return aPh+(t-aT)*aF;}
+function setLfoFreq(f){
+  if(!lfo) return;
+  const at=ctx.currentTime+0.05;
+  aPh=aphaseAt(at); aT=at; aF=f;
+  lfo.frequency.setValueAtTime(f,at);
+}
+function outTs(){
+  let c=0,p=0;
+  if(ctx.getOutputTimestamp){const o=ctx.getOutputTimestamp(); c=o.contextTime; p=o.performanceTime;}
+  if(!(p>0)){c=ctx.currentTime-(ctx.outputLatency||ctx.baseLatency||0); p=performance.now();}
+  return {c,p};
+}
+function audioAt(perfMs){const o=outTs(); return o.c+(perfMs-o.p)/1000;}
+/* the light is driven by the display's own frame grid; edges always fall on frame boundaries */
+function anchor(ts){
+  frameDur=1000/refreshHz; t0=ts;
+  const o=outTs();
+  const tp=o.p+(startT-o.c)*1000;
+  K=Math.round((tp-t0)/frameDur)-1;
+  anchored=true; lastPLL=0;
+}
+function pll(idx,lp){
+  const td=audioAt(t0+(idx+1.5)*frameDur);
+  if(td<startT||!lfo) return;
+  let e=aphaseAt(td)-lp; e-=Math.round(e);
+  setLfoFreq(S.freq+clamp(-2*e,-1,1));
+}
+function teardownAudio(){
+  [osc,lfo].forEach(n=>{try{n&&n.stop();}catch(e){}});
+  [osc,lfo,lfoGain,gate,master].forEach(n=>{try{n&&n.disconnect();}catch(e){}});
+  osc=lfo=lfoGain=gate=master=null;
+}
+function restartPulse(){
+  teardownAudio(); buildAudio();
+  anchored=false; edges=[]; runStartTs=0; lastOn=false; dirty=true;
+}
+
+/* ---------- refresh-rate measurement ---------- */
+function median(a){const s=[...a].sort((x,y)=>x-y);return s[Math.floor(s.length/2)];}
+function snapHz(hz){
+  const std=[30,48,50,60,72,75,90,100,120,144,165,240];
+  for(const s of std) if(Math.abs(hz-s)/s<0.05) return s;
+  return Math.round(hz);
+}
+function measureIdle(reset){
+  if(idleMeasure||running) return;
+  if(reset) runSeenHz=0;
+  idleMeasure=true; const d=[]; let last=0, flip=false;
+  const probe=$('probe');
+  const tick=ts=>{
+    if(running){idleMeasure=false;probe.style.opacity=0;return;}
+    /* change pixels every frame so the phone's adaptive refresh governor sees real animation */
+    flip=!flip; probe.style.opacity=1; probe.style.background=flip?'#fff':'#000';
+    if(last) d.push(ts-last);
+    last=ts;
+    if(d.length<150) requestAnimationFrame(tick);
+    else{
+      idleMeasure=false; probe.style.opacity=0;
+      refreshHz=Math.max(snapHz(1000/median(d.slice(20))), runSeenHz);
+      updateInfo();
+    }
+  };
+  requestAnimationFrame(tick);
+}
+function updateInfo(){
+  const el=$('refInfo'), btn=$('btnBest');
+  const f=S.freq, r=refreshHz, half=r/(2*f);
+  const n=Math.max(1,Math.round(half));
+  const best=r/(2*n);
+  let cls='info', msg=`نرخ نوسازی صفحه: حدود ${r} Hz. بیشترین سرعت چشمک‌زدن کامل نور حدود ${fmt(r/2)} Hz است.`;
+  if(f>r/2){
+    cls='info warn';
+    msg+=`<br>${fmt(f)} Hz از توان صفحه بیشتر است؛ نور فقط تا حدود ${fmt(r/2)} Hz واقعی می‌شود. صدا همچنان دقیقاً ${fmt(f)} Hz است.`;
+  }else if(Math.abs(half-n)>0.02){
+    cls='info warn';
+    msg+=`<br>${fmt(f)} Hz به تعداد صحیح فریم تقسیم نمی‌شود، پس بعضی چرخه‌های نور نامنظم یا حذف می‌شوند. نزدیک‌ترین فرکانس دقیق برای نور: ${fmt(best)} Hz.`;
+  }else{
+    cls='info ok';
+    msg+=`<br>این فرکانس با صفحه‌ات هماهنگ است (هر نیمه‌چرخه ${n} فریم).`;
+  }
+  el.className=cls; el.innerHTML=msg;
+  if(cls!=='info ok' && best>=1 && best<=100 && Math.abs(best-f)>0.05){
+    btn.hidden=false; btn.textContent=`استفاده از ${fmt(best)} Hz`; btn.onclick=()=>setFreq(best);
+  }else btn.hidden=true;
+}
+
+/* ---------- render loop: light follows the display frame grid, audio is phase-locked to it ---------- */
+function frame(ts){
+  if(!running) return;
+  rafId=requestAnimationFrame(frame);
+  if(lastTs){const d=ts-lastTs; if(d>2&&d<100){deltas.push(d); if(deltas.length>60)deltas.shift();}}
+  lastTs=ts;
+  if(!runStartTs) runStartTs=ts;
+  const t=ctx.currentTime;
+  if(!anchored) anchor(ts);
+  const idx=Math.round((ts-t0)/frameDur);
+  const lp=((idx-K)+0.5)*frameDur/1000*S.freq;   // light phase (cycles) at the centre of this frame
+  let on=false;
+  if(idx>=K){
+    const q=lp+S.offset/1000*S.freq+1e-6;
+    on=(q-Math.floor(q))<0.5;
+    if(ts-lastPLL>100){lastPLL=ts; pll(idx,lp);}
+  }
+  if(on!==lastOn||dirty){
+    if(on&&!lastOn) edges.push(ts);
+    $('stage').style.background=on?shade():'#000';
+    lastOn=on; dirty=false;
+  }
+  while(edges.length&&ts-edges[0]>1000) edges.shift();
+  if(ts-lastStat>250){
+    lastStat=ts;
+    if(deltas.length>=30){const hz=snapHz(1000/median(deltas)); runSeenHz=Math.max(runSeenHz,hz); if(hz!==refreshHz){refreshHz=hz; anchored=false; updateInfo();}}
+    $('stRef').textContent=refreshHz+' Hz';
+    $('stReq').textContent=fmt(S.freq)+' Hz';
+    $('stLight').textContent=(ts-runStartTs<1100)?'…':edges.length+' Hz';
+    $('stSnd').textContent=S.sound?fmt(S.freq)+' Hz':'خاموش';
+    if(durSec>0){
+      const rem=durSec-(t-startT);
+      if(rem<=0){stop();return;}
+      $('stTime').textContent=Math.ceil(rem)+' s';
+    }else $('stTime').textContent='∞';
+  }
+}
+
+/* ---------- start / stop ---------- */
+function askConsent(){
+  if(consented) return Promise.resolve(true);
+  return new Promise(res=>{
+    const m=$('modal'), chk=$('mChk'), ok=$('mOk'), no=$('mNo');
+    chk.checked=false; ok.disabled=true; m.classList.add('show');
+    const done=v=>{m.classList.remove('show'); chk.onchange=ok.onclick=no.onclick=null; if(v)consented=true; res(v);};
+    chk.onchange=()=>{ok.disabled=!chk.checked;};
+    ok.onclick=()=>done(true); no.onclick=()=>done(false);
+  });
+}
+async function start(){
+  if(running) return;
+  if(!(await askConsent())) return;
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx){alert('مرورگر شما از Web Audio پشتیبانی نمی‌کند.');return;}
+  if(!ctx) ctx=new Ctx({latencyHint:'interactive'});
+  const stage=$('stage'); stage.classList.add('show'); stage.style.background='#000';
+  if(stage.requestFullscreen){
+    stage.requestFullscreen({navigationUI:'hide'}).then(()=>{enteredFS=true;}).catch(()=>{enteredFS=false;});
+  }
+  try{await ctx.resume();}catch(e){}
+  buildAudio();
+  durSec=(parseFloat($('durVal').value)||0)*parseFloat($('durUnit').value);
+  anchored=false; edges=[]; deltas=[]; lastTs=0; runStartTs=0; lastOn=false; dirty=true; lastStat=0;
+  running=true;
+  try{ if(navigator.wakeLock) wake=await navigator.wakeLock.request('screen'); }catch(e){}
+  rafId=requestAnimationFrame(frame);
+}
+function stop(){
+  if(!running) return;
+  running=false; cancelAnimationFrame(rafId);
+  teardownAudio();
+  $('stage').classList.remove('show');
+  if(document.fullscreenElement){enteredFS=false; document.exitFullscreen().catch(()=>{});}
+  try{wake&&wake.release();}catch(e){} wake=null;
+  measureIdle();
+}
+$('btnStart').addEventListener('click',start);
+$('btnRemeasure').addEventListener('click',()=>{$('refInfo').textContent='در حال اندازه‌گیری…'; measureIdle(true);});
+$('btnStop').addEventListener('click',e=>{e.stopPropagation();stop();});
+$('stage').addEventListener('pointerdown',e=>{ if(!$('panel').contains(e.target)) stop(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') stop(); });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) stop(); });
+window.addEventListener('pagehide',stop);
+document.addEventListener('fullscreenchange',()=>{ if(enteredFS&&!document.fullscreenElement){enteredFS=false; stop();} });
+
+setFreq(S.freq); setBright(S.bright); setVol(S.vol);
+measureIdle();
+})();
+</script>
+</body>
+</html>
