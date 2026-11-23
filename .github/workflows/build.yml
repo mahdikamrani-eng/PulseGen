@@ -27,7 +27,6 @@ jobs:
         run: |
           test -f index.html || { echo "index.html is missing from the repository root"; exit 1; }
           
-          # ساخت ساختار استاندارد ماژول app
           mkdir -p app/src/main/java/com/atro/pulse app/src/main/assets
           cp index.html app/src/main/assets/index.html
 
